@@ -20,7 +20,7 @@ interface ProcessTextResponse {
 
 interface HealthResponse {
   status: string;
-  grok_ai: string;
+  groq_ai: string;
   capabilities: {
     ai_extraction: boolean;
     regex_fallback: boolean;
@@ -29,6 +29,8 @@ interface HealthResponse {
 
 const HebrewFormProcessor: React.FC = () => {
   const [inputText, setInputText] = useState('');
+  const [activityType, setActivityType] = useState('');
+  const [date, setDate] = useState('');
   const [processedData, setProcessedData] = useState<ProcessTextResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -59,7 +61,9 @@ const HebrewFormProcessor: React.FC = () => {
 
     try {
       const response = await axios.post('/process-text', {
-        text: inputText
+        text: inputText,
+        activity_type: activityType || null,
+        date: date || null
       });
 
       setProcessedData(response.data);
@@ -81,7 +85,9 @@ const HebrewFormProcessor: React.FC = () => {
 
     try {
       const response = await axios.post('/generate-document', {
-        text: inputText
+        text: inputText,
+        activity_type: activityType || null,
+        date: date || null
       }, {
         responseType: 'blob'
       });
@@ -115,23 +121,23 @@ const HebrewFormProcessor: React.FC = () => {
 
   const handleClearText = () => {
     setInputText('');
+    setActivityType('');
+    setDate('');
     setProcessedData(null);
     setError(null);
   };
 
   const loadExampleText = (type: 'natural' | 'structured') => {
     if (type === 'natural') {
-      setInputText(`התעמלות הריון - יוני 2024
-
-שרה כהן השתתפה בקורס התעמלות הריון במהלך החודש. תעודת הזהות של שרה היא 123456789. היא שילמה 280 שקלים עבור הקורס וקיבלה קבלה מספר 12345.
+      setInputText(`שרה כהן השתתפה בקורס התעמלות הריון במהלך החודש. תעודת הזהות של שרה היא 123456789. היא שילמה 280 שקלים עבור הקורס וקיבלה קבלה מספר 12345.
 
 גם רחל לוי הגיעה לקורסים. המספר זהות שלה 987654321, והיא שילמה 300 ש״ח. הקבלה שלה מספר 67890.
 
 בנוסף, מיכל דוד (ת.ז 456789123) השתתפה גם היא. היא שילמה סכום של 250 שקלים וקבלה חשבונית 11111.`);
+      setActivityType('הריון');
+      setDate('יוני 2024');
     } else {
-      setInputText(`התעמלות לאחר לידה - יוני 2024
-
-שם: ליאת ישראלי
+      setInputText(`שם: ליאת ישראלי
 תעודת זהות: 321654987
 מספר קבלה: 98765
 סכום ששולם: 200 ש״ח
@@ -140,6 +146,8 @@ const HebrewFormProcessor: React.FC = () => {
 תעודת זהות: 147258369
 מספר קבלה: 55555
 סכום ששולם: 225 ₪`);
+      setActivityType('לאחר לידה');
+      setDate('יוני 2024');
     }
   };
 
@@ -161,6 +169,43 @@ const HebrewFormProcessor: React.FC = () => {
               <span>מצב רגיל - עיבוד טקסט מובנה בלבד</span>
             </div>
           )}
+        </div>
+
+        {/* Form Controls */}
+        <div className="form-controls">
+          <div className="control-row">
+            <div className="control-group">
+              <label htmlFor="activity-select" className="control-label">
+                סוג פעילות:
+              </label>
+              <select
+                id="activity-select"
+                className="activity-select"
+                value={activityType}
+                onChange={(e) => setActivityType(e.target.value)}
+                disabled={isLoading}
+              >
+                <option value="">בחר סוג פעילות...</option>
+                <option value="לאחר לידה">לאחר לידה</option>
+                <option value="הריון">הריון</option>
+              </select>
+            </div>
+
+            <div className="control-group">
+              <label htmlFor="date-input" className="control-label">
+                תאריך (בעברית):
+              </label>
+              <input
+                id="date-input"
+                type="text"
+                className="date-input"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                placeholder="למשל: יוני 2024"
+                disabled={isLoading}
+              />
+            </div>
+          </div>
         </div>
 
         {/* Example Buttons */}
@@ -242,7 +287,7 @@ const HebrewFormProcessor: React.FC = () => {
             onClick={handleClearText}
             disabled={isLoading}
           >
-            נקה
+            נקה הכל
           </button>
         </div>
 
@@ -264,6 +309,18 @@ const HebrewFormProcessor: React.FC = () => {
           </div>
         )}
 
+        {/* Document Title Preview */}
+        {(activityType || date) && (
+          <div className="title-preview">
+            <h4>תצוגה מקדימה של כותרת המסמך:</h4>
+            <div className="preview-title">
+              {activityType && date ? `${activityType} - ${date}` : 
+               activityType ? activityType : 
+               date ? date : ''}
+            </div>
+          </div>
+        )}
+
         {processedData && (
           <div className="results-section">
             <h3 className="results-title">תוצאות העיבוד</h3>
@@ -273,7 +330,7 @@ const HebrewFormProcessor: React.FC = () => {
               <p className="processing-method">
                 <strong>שיטת עיבוד:</strong> {
                   aiStatus?.capabilities.ai_extraction 
-                    ? 'בינה מלאכותית (Grok AI)' 
+                    ? 'בינה מלאכותית (Groq AI)' 
                     : 'עיבוד רגיל'
                 }
               </p>

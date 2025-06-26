@@ -24,6 +24,8 @@ load_dotenv()
 # Pydantic models for request/response
 class ProcessTextRequest(BaseModel):
     text: str
+    activity_type: Optional[str] = None  # User-selected activity type
+    date: Optional[str] = None  # User-entered Hebrew date
 
 
 class ParticipantInfo(BaseModel):
@@ -45,7 +47,7 @@ class ProcessTextResponse(BaseModel):
 app = FastAPI(
     title="Hebrew Physiotherapy Workshops Form Generator",
     description="API for processing Hebrew text and generating Word documents with Groq AI integration",
-    version="2.0.0"
+    version="2.1.0"
 )
 
 # CORS middleware to allow React frontend
@@ -65,7 +67,7 @@ async def root():
     
     return {
         "message": "Hebrew Physiotherapy Workshops Form Generator API",
-        "version": "2.0.0",
+        "version": "2.1.0",
         "groq_ai_integration": groq_status,
         "environment": os.getenv('ENVIRONMENT', 'development'),
         "endpoints": {
@@ -75,6 +77,7 @@ async def root():
         },
         "features": [
             "Intelligent Hebrew text processing with Groq AI (Llama 3.3 70B)",
+            "User-selectable activity types and custom dates",
             "Fallback regex extraction for structured text",
             "Professional Word document generation",
             "Activity type detection",
@@ -89,7 +92,7 @@ async def process_text(request: ProcessTextRequest):
     Process Hebrew text and extract participant information using Groq AI.
     
     Args:
-        request: ProcessTextRequest containing the Hebrew text
+        request: ProcessTextRequest containing the Hebrew text, activity type, and date
         
     Returns:
         ProcessTextResponse with extracted information
@@ -104,6 +107,15 @@ async def process_text(request: ProcessTextRequest):
         
         # Process the text
         result = processor.process_text(request.text)
+        
+        # Override activity type if user selected one
+        if request.activity_type:
+            # Map dropdown values to full Hebrew text
+            activity_mapping = {
+                "לאחר לידה": "התעמלות לאחר לידה",
+                "הריון": "התעמלות הריון"
+            }
+            result['activity_type'] = activity_mapping.get(request.activity_type, request.activity_type)
         
         # Convert participants to Pydantic models
         participants = [
@@ -128,7 +140,7 @@ async def generate_document(request: ProcessTextRequest):
     Generate and return a Word document from Hebrew text using Groq AI.
     
     Args:
-        request: ProcessTextRequest containing the Hebrew text
+        request: ProcessTextRequest containing the Hebrew text, activity type, and date
         
     Returns:
         StreamingResponse with the Word document
@@ -144,6 +156,14 @@ async def generate_document(request: ProcessTextRequest):
         # Process the text
         result = processor.process_text(request.text)
         
+        # Override activity type if user selected one
+        if request.activity_type:
+            activity_mapping = {
+                "לאחר לידה": "התעמלות לאחר לידה",
+                "הריון": "התעמלות הריון"
+            }
+            result['activity_type'] = activity_mapping.get(request.activity_type, request.activity_type)
+        
         if not result['participants']:
             raise HTTPException(
                 status_code=400, 
@@ -155,8 +175,12 @@ async def generate_document(request: ProcessTextRequest):
             temp_path = tmp_file.name
         
         try:
-            # Generate the Word document
-            processor.create_word_document(temp_path)
+            # Generate the Word document with custom title
+            custom_title = None
+            if request.activity_type and request.date:
+                custom_title = f"{request.activity_type} - {request.date}"
+            
+            processor.create_word_document(temp_path, custom_title=custom_title)
             
             # Read the file content
             with open(temp_path, 'rb') as file:
@@ -199,7 +223,8 @@ async def health_check():
             "hebrew_processing": True,
             "ai_extraction": bool(os.getenv('GROQ_API_KEY')),
             "regex_fallback": True,
-            "word_generation": True
+            "word_generation": True,
+            "custom_titles": True
         }
     }
 

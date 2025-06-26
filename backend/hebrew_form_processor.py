@@ -227,12 +227,13 @@ class HebrewFormProcessor:
         logger.info(f"Processing complete: {result['total_participants']} participants found")
         return result
     
-    def create_word_document(self, output_path: str = None) -> str:
+    def create_word_document(self, output_path: str = None, custom_title: str = None) -> str:
         """
         Create a Word document with the extracted information.
         
         Args:
             output_path: Path where to save the document
+            custom_title: Custom title for the document (overrides default)
             
         Returns:
             Path to the created document
@@ -247,15 +248,19 @@ class HebrewFormProcessor:
         doc.sections[0].start_type = 1
         
         # Create title
-        current_month = self.HEBREW_MONTHS[datetime.now().month]
-        
-        # Use the first participant's name for the title, or a generic title
-        if self.participants and self.participants[0].get('name'):
-            title_name = self.participants[0]['name']
+        if custom_title:
+            title = custom_title
         else:
-            title_name = "משתתפים"
-        
-        title = f"{title_name} - {current_month}"
+            # Default title with current month
+            current_month = self.HEBREW_MONTHS[datetime.now().month]
+            
+            # Use the first participant's name for the title, or a generic title
+            if self.participants and self.participants[0].get('name'):
+                title_name = self.participants[0]['name']
+            else:
+                title_name = "משתתפים"
+            
+            title = f"{title_name} - {current_month}"
         
         # Add title to document
         title_paragraph = doc.add_paragraph()
