@@ -20,19 +20,28 @@ const ParticipantTable: React.FC<ParticipantTableProps> = ({ participants }) => 
         <table className="participant-table">
           <thead>
             <tr>
+              {/* Hebrew RTL Order: Reverse order for proper RTL display */}
+              {/* Amount column will appear leftmost */}
+              <th>סכום</th>
+              {/* Receipt Number column */}
+              <th>מס' קבלה</th>
+              {/* ID column */}
+              <th>ת.ז</th>
+              {/* Name column will appear rightmost */}
               <th>שם</th>
-              <th>תעודת זהות</th>
-              <th>מספר קבלה</th>
-              <th>סכום ששולם</th>
             </tr>
           </thead>
           <tbody>
             {participants.map((participant, index) => (
               <tr key={index}>
-                <td>{participant.name || '-'}</td>
-                <td>{participant.id || '-'}</td>
-                <td>{participant.receipt_number || '-'}</td>
+                {/* Amount column (leftmost in display) */}
                 <td>{participant.amount || '-'}</td>
+                {/* Receipt Number column */}
+                <td>{participant.receipt_number || '-'}</td>
+                {/* ID column */}
+                <td>{participant.id || '-'}</td>
+                {/* Name column (rightmost in display) */}
+                <td>{participant.name || '-'}</td>
               </tr>
             ))}
           </tbody>

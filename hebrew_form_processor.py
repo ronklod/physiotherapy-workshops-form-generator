@@ -193,7 +193,10 @@ class HebrewFormProcessor:
         
         # Add header row
         header_cells = table.rows[0].cells
-        headers = ['שם', 'תעודת זהות', 'מספר קבלה', 'סכום ששולם']
+       # headers = ['שם', 'תעודת זהות', 'מספר קבלה', 'סכום ששולם']
+
+        headers = ['סכום', 'מסםר קבלה', 'תעודת זהות', 'שם']
+        
         
         for i, header in enumerate(headers):
             header_cells[i].text = header
@@ -206,10 +209,14 @@ class HebrewFormProcessor:
         # Add participant data
         for participant in self.participants:
             row_cells = table.add_row().cells
-            row_cells[0].text = participant.get('name', '')
-            row_cells[1].text = participant.get('id', '')
-            row_cells[2].text = participant.get('receipt_number', '')
-            row_cells[3].text = participant.get('amount', '')
+            # row_cells[0].text = participant.get('name', '')
+            # row_cells[1].text = participant.get('id', '')
+            # row_cells[2].text = participant.get('receipt_number', '')
+            # row_cells[3].text = participant.get('amount', '')
+            row_cells[0].text = participant.get('amount', '')
+            row_cells[1].text = participant.get('receipt_number', '')
+            row_cells[2].text = participant.get('id', '')
+            row_cells[3].text = participant.get('name', '')
             
             # Center align the data
             for cell in row_cells:

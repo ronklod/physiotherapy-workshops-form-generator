@@ -1,6 +1,7 @@
 /* ParticipantTable.css */
 .participant-table-container {
   margin-top: 1.5rem;
+  direction: rtl;
 }
 
 .table-title {
@@ -16,6 +17,7 @@
   overflow-x: auto;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  direction: rtl;
 }
 
 .participant-table {
@@ -24,6 +26,8 @@
   background: white;
   border-radius: 8px;
   overflow: hidden;
+  direction: rtl;
+  text-align: center;
 }
 
 .participant-table th {
@@ -34,6 +38,7 @@
   font-weight: 600;
   font-size: 0.95rem;
   direction: rtl;
+  white-space: nowrap;
 }
 
 .participant-table td {
@@ -42,6 +47,7 @@
   border-bottom: 1px solid #ecf0f1;
   color: #2c3e50;
   direction: rtl;
+  white-space: nowrap;
 }
 
 .participant-table tbody tr:hover {
@@ -50,6 +56,19 @@
 
 .participant-table tbody tr:last-child td {
   border-bottom: none;
+}
+
+/* Ensure proper Hebrew RTL table layout */
+.participant-table th:first-child,
+.participant-table td:first-child {
+  /* Amount column - leftmost in RTL */
+  border-left: none;
+}
+
+.participant-table th:last-child,
+.participant-table td:last-child {
+  /* Name column - rightmost in RTL */
+  border-right: none;
 }
 
 /* Responsive table */
