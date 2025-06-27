@@ -231,7 +231,7 @@ const HebrewFormProcessor: React.FC = () => {
         
         <div className="input-section">
           <label htmlFor="hebrew-input" className="input-label">
-            הכנס את הטקסט העברי כאן:
+            הכנס את הטקסט כאן:
           </label>
           <textarea
             id="hebrew-input"
