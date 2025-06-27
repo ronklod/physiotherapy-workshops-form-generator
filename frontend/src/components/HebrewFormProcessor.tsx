@@ -127,34 +127,12 @@ const HebrewFormProcessor: React.FC = () => {
     setError(null);
   };
 
-  const loadExampleText = (type: 'natural' | 'structured') => {
-    if (type === 'natural') {
-      setInputText(`שרה כהן השתתפה בקורס התעמלות הריון במהלך החודש. תעודת הזהות של שרה היא 123456789. היא שילמה 280 שקלים עבור הקורס וקיבלה קבלה מספר 12345.
 
-גם רחל לוי הגיעה לקורסים. המספר זהות שלה 987654321, והיא שילמה 300 ש״ח. הקבלה שלה מספר 67890.
-
-בנוסף, מיכל דוד (ת.ז 456789123) השתתפה גם היא. היא שילמה סכום של 250 שקלים וקבלה חשבונית 11111.`);
-      setActivityType('הריון');
-      setDate('יוני 2024');
-    } else {
-      setInputText(`שם: ליאת ישראלי
-תעודת זהות: 321654987
-מספר קבלה: 98765
-סכום ששולם: 200 ש״ח
-
-שם: נועה גולדברג
-תעודת זהות: 147258369
-מספר קבלה: 55555
-סכום ששולם: 225 ₪`);
-      setActivityType('לאחר לידה');
-      setDate('יוני 2024');
-    }
-  };
 
   return (
     <div className="hebrew-form-processor">
       <div className="processor-card">
-        <h2 className="processor-title">עיבוד טקסט עברי באמצעות בינה מלאכותית</h2>
+        <h2 className="processor-title">עיבוד טקסט באמצעות בינה מלאכותית</h2>
         
         {/* AI Status Indicator */}
         <div className="ai-status">
@@ -193,7 +171,7 @@ const HebrewFormProcessor: React.FC = () => {
 
             <div className="control-group">
               <label htmlFor="date-input" className="control-label">
-                תאריך (בעברית):
+                תאריך:
               </label>
               <input
                 id="date-input"
@@ -208,26 +186,7 @@ const HebrewFormProcessor: React.FC = () => {
           </div>
         </div>
 
-        {/* Example Buttons */}
-        <div className="example-section">
-          <h3 className="example-title">דוגמאות:</h3>
-          <div className="example-buttons">
-            <button
-              className="btn btn-example"
-              onClick={() => loadExampleText('natural')}
-              disabled={isLoading}
-            >
-              טקסט טבעי (עבור AI)
-            </button>
-            <button
-              className="btn btn-example"
-              onClick={() => loadExampleText('structured')}
-              disabled={isLoading}
-            >
-              טקסט מובנה
-            </button>
-          </div>
-        </div>
+
         
         <div className="input-section">
           <label htmlFor="hebrew-input" className="input-label">
@@ -271,7 +230,7 @@ const HebrewFormProcessor: React.FC = () => {
             onClick={handleProcessText}
             disabled={isLoading || !inputText.trim()}
           >
-            {isLoading ? 'מעבד...' : 'עבד טקסט'}
+            {isLoading ? 'מעבד...' : 'תצוגה מקדימה'}
           </button>
           
           <button
