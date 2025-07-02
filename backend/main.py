@@ -9,10 +9,12 @@ import os
 import tempfile
 from datetime import datetime
 from typing import Dict, List, Optional
+from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from dotenv import load_dotenv
 
@@ -50,6 +52,14 @@ app = FastAPI(
     version="2.1.0"
 )
 
+# Define the path to the React build directory
+# The path is relative to the backend directory since that's where the server runs from
+FRONTEND_BUILD_PATH = Path(__file__).parent.parent / "frontend" / "build"
+
+# Mount the static files from the React build directory
+app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_PATH / "static")), name="static")
+
+
 # CORS middleware to allow React frontend
 app.add_middleware(
     CORSMiddleware,
@@ -62,31 +72,42 @@ app.add_middleware(
 
 @app.get("/")
 async def root():
-    """Root endpoint with API information."""
-    groq_status = "enabled" if os.getenv('GROQ_API_KEY') else "disabled (set GROQ_API_KEY environment variable)"
+    """Root endpoint - serves the React frontend."""
+    # Serve the index.html from the React build directory
+    index_path = FRONTEND_BUILD_PATH / "index.html"
     
-    return {
-        "message": "Hebrew Physiotherapy Workshops Form Generator API",
-        "version": "2.1.0",
-        "groq_ai_integration": groq_status,
-        "environment": os.getenv('ENVIRONMENT', 'development'),
-        "endpoints": {
-            "POST /process-text": "Process Hebrew text and extract participant information",
-            "POST /generate-document": "Generate and download Word document",
-            "GET /health": "Health check"
-        },
-        "features": [
-            "Intelligent Hebrew text processing with Groq AI (Llama 3.3 70B)",
-            "User-selectable activity types and custom dates",
-            "Fallback regex extraction for structured text",
-            "Professional Word document generation",
-            "Activity type detection",
-            "Hebrew RTL formatting support"
-        ]
-    }
+    if not index_path.exists():
+        # If frontend isn't built, provide API info instead
+        groq_status = "enabled" if os.getenv('GROQ_API_KEY') else "disabled (set GROQ_API_KEY environment variable)"
+        return {
+            "message": "Hebrew Physiotherapy Workshops Form Generator API",
+            "version": "2.1.0",
+            "groq_ai_integration": groq_status,
+            "environment": os.getenv('ENVIRONMENT', 'development'),
+            "endpoints": {
+                "POST /process-text": "Process Hebrew text and extract participant information",
+                "POST /generate-document": "Generate and download Word document",
+                "GET /health": "Health check"
+            },
+            "frontend_status": "Not built. Please run 'npm run build' in the frontend directory.",
+            "features": [
+                "Intelligent Hebrew text processing with Groq AI (Llama 3.3 70B)",
+                "User-selectable activity types and custom dates",
+                "Fallback regex extraction for structured text",
+                "Professional Word document generation",
+                "Activity type detection",
+                "Hebrew RTL formatting support"
+            ]
+        }
+        
+    # Read and serve the index.html file
+    with open(index_path, "r") as f:
+        html_content = f.read()
+        
+    return HTMLResponse(content=html_content)
 
 
-@app.post("/process-text", response_model=ProcessTextResponse)
+@app.post("/api/process-text", response_model=ProcessTextResponse)
 async def process_text(request: ProcessTextRequest):
     """
     Process Hebrew text and extract participant information using Groq AI.
@@ -134,7 +155,7 @@ async def process_text(request: ProcessTextRequest):
         raise HTTPException(status_code=500, detail=f"Error processing text: {str(e)}")
 
 
-@app.post("/generate-document")
+@app.post("/api/generate-document")
 async def generate_document(request: ProcessTextRequest):
     """
     Generate and return a Word document from Hebrew text using Groq AI.
@@ -209,7 +230,7 @@ async def generate_document(request: ProcessTextRequest):
         raise HTTPException(status_code=500, detail=f"Error generating document: {str(e)}")
 
 
-@app.get("/health")
+@app.get("/api/health")
 async def health_check():
     """Health check endpoint."""
     groq_status = "available" if os.getenv('GROQ_API_KEY') else "not configured"
@@ -229,7 +250,7 @@ async def health_check():
     }
 
 
-@app.get("/setup-help")
+@app.get("/api/setup-help")
 async def setup_help():
     """Provide setup instructions for Groq API."""
     return {
@@ -251,6 +272,56 @@ async def setup_help():
     }
 
 
+@app.get("/api/info")
+async def api_info():
+    """API information endpoint."""
+    groq_status = "enabled" if os.getenv('GROQ_API_KEY') else "disabled (set GROQ_API_KEY environment variable)"
+    
+    return {
+        "message": "Hebrew Physiotherapy Workshops Form Generator API",
+        "version": "2.1.0",
+        "groq_ai_integration": groq_status,
+        "environment": os.getenv('ENVIRONMENT', 'development'),
+        "endpoints": {
+            "POST /api/process-text": "Process Hebrew text and extract participant information",
+            "POST /api/generate-document": "Generate and download Word document",
+            "GET /api/health": "Health check"
+        },
+        "features": [
+            "Intelligent Hebrew text processing with Groq AI (Llama 3.3 70B)",
+            "User-selectable activity types and custom dates",
+            "Fallback regex extraction for structured text",
+            "Professional Word document generation",
+            "Activity type detection",
+            "Hebrew RTL formatting support",
+            "Integrated frontend serving"
+        ]
+    }
+
+
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str, request: Request):
+    """
+    Serve the React frontend for any other routes.
+    This enables client-side routing with React Router.
+    """
+    # Check if the path is an API route or a static file
+    if full_path.startswith("api/") or full_path == "":
+        # For API routes, pass through to the appropriate endpoint
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+        
+    # For all other routes, serve the index.html from React build
+    index_path = FRONTEND_BUILD_PATH / "index.html"
+    
+    if not index_path.exists():
+        return {"message": "Frontend not built. Please run 'npm run build' in the frontend directory."}
+        
+    with open(index_path, "r") as f:
+        html_content = f.read()
+        
+    return HTMLResponse(content=html_content)
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000) 
+    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -10,6 +10,7 @@ An application that processes Hebrew text to extract participant information fro
 - **Activity Type Recognition**: Supports two activity types:
   - התעמלות לאחר לידה (Post-birth exercise)
   - התעמלות הריון (Pregnancy exercise)
+- **Integrated Frontend/Backend**: Backend server can serve the React frontend
 
 ## Installation
 
@@ -21,6 +22,30 @@ An application that processes Hebrew text to extract participant information fro
    ```
 
 ## Usage
+
+### Full Stack Application
+
+You can now run the application as a full stack service with a single command:
+
+```bash
+./start-fullstack.sh
+```
+
+This script will:
+1. Build the React frontend
+2. Start the FastAPI backend server which will serve both the API endpoints and the React frontend
+3. The application will be available at http://localhost:8000
+
+If you've already built the frontend, you can start just the backend:
+
+```bash
+./start-backend.sh
+```
+
+The API endpoints are now available under the `/api` prefix:
+- `/api/process-text` - Process Hebrew text and extract participant information
+- `/api/generate-document` - Generate and download Word document
+- `/api/health` - Health check endpoint
 
 ### Interactive Mode
 
@@ -154,4 +179,4 @@ The application generates:
 
 ## License
 
-This project is open source and available under the MIT License. 
+This project is open source and available under the MIT License.

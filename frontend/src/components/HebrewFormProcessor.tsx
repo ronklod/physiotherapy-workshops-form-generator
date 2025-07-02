@@ -43,7 +43,7 @@ const HebrewFormProcessor: React.FC = () => {
 
   const checkAiStatus = async () => {
     try {
-      const response = await axios.get('/health');
+      const response = await axios.get('/api/health');
       setAiStatus(response.data);
     } catch (err) {
       console.error('Failed to check AI status:', err);
@@ -60,7 +60,7 @@ const HebrewFormProcessor: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.post('/process-text', {
+      const response = await axios.post('/api/process-text', {
         text: inputText,
         activity_type: activityType || null,
         date: date || null
@@ -84,7 +84,7 @@ const HebrewFormProcessor: React.FC = () => {
     setError(null);
 
     try {
-      const response = await axios.post('/generate-document', {
+      const response = await axios.post('/api/generate-document', {
         text: inputText,
         activity_type: activityType || null,
         date: date || null
