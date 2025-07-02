@@ -60,6 +60,36 @@ FRONTEND_BUILD_PATH = Path(__file__).parent.parent / "frontend" / "build"
 app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_PATH / "static")), name="static")
 
 
+@app.get("/favicon.ico")
+async def favicon():
+    """Serve the favicon.ico file."""
+    favicon_path = FRONTEND_BUILD_PATH / "favicon.ico"
+    if not favicon_path.exists():
+        raise HTTPException(status_code=404, detail="Favicon not found")
+    
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        favicon_path,
+        media_type="image/x-icon",
+        headers={"Cache-Control": "public, max-age=86400"}  # Cache for 1 day
+    )
+
+
+@app.get("/manifest.json")
+async def manifest():
+    """Serve the manifest.json file."""
+    manifest_path = FRONTEND_BUILD_PATH / "manifest.json"
+    if not manifest_path.exists():
+        raise HTTPException(status_code=404, detail="Manifest not found")
+    
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        manifest_path,
+        media_type="application/json",
+        headers={"Cache-Control": "public, max-age=86400"}  # Cache for 1 day
+    )
+
+
 # CORS middleware to allow React frontend
 app.add_middleware(
     CORSMiddleware,
