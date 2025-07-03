@@ -48,9 +48,10 @@ yarn-error.log*
 lerna-debug.log*
 
 # React build
-frontend/build/
-frontend/build_1/
-frontend/dist/
+# Commenting out to allow build directory to be tracked
+# frontend/build/
+# frontend/build_1/
+# frontend/dist/
 
 # Logs
 *.log
