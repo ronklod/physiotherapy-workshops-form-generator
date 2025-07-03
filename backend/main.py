@@ -56,6 +56,7 @@ app = FastAPI(
 # The path is relative to the backend directory since that's where the server runs from
 FRONTEND_BUILD_PATH = Path(__file__).parent.parent / "frontend" / "build"
 
+
 # Mount the static files from the React build directory
 app.mount("/static", StaticFiles(directory=str(FRONTEND_BUILD_PATH / "static")), name="static")
 
@@ -335,6 +336,7 @@ async def serve_frontend(full_path: str, request: Request):
     Serve the React frontend for any other routes.
     This enables client-side routing with React Router.
     """
+
     # Check if the path is an API route or a static file
     if full_path.startswith("api/") or full_path == "":
         # For API routes, pass through to the appropriate endpoint

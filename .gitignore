@@ -48,8 +48,8 @@ yarn-error.log*
 lerna-debug.log*
 
 # React build
-frontend/build/
-frontend/dist/
+#frontend/build/
+#frontend/dist/
 
 # Logs
 *.log
